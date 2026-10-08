@@ -18,6 +18,10 @@ import java.util.random.RandomGeneratorFactory;
  * found or the iteration budget runs out. The single varying step, how a neighboring solution is
  * derived from a current one, is delegated to subclasses through {@link #generateNeighbor}.
  *
+ * <p>The random generator and the evaluation counter are instance state, so an instance must not be
+ * shared across threads. Calling {@link #solve} repeatedly on the same instance is fine: each call
+ * starts from a fresh random colony, so successive runs are independent samples.
+ *
  * @see AbcSolver
  * @see OptimizedAbcSolver
  */
@@ -25,6 +29,7 @@ public abstract class AbstractAbcSolver implements NonogramSolver {
     private final int colonySize;
     private final int limit;
     private final int maxIterations;
+    private long evaluations;
 
     protected final FitnessEvaluator fitnessEvaluator = new FitnessEvaluator();
     protected final RandomGenerator randomGenerator = RandomGeneratorFactory.getDefault().create();
@@ -59,21 +64,30 @@ public abstract class AbstractAbcSolver implements NonogramSolver {
      * Runs the colony until a perfect solution appears or the iteration budget is exhausted.
      *
      * @param puzzle the puzzle to solve
-     * @return the best solution encountered across all iterations
+     * @return the best solution encountered across all iterations, with the number of iterations and
+     * fitness evaluations spent finding it
      */
     @Override
-    public Solution solve(Puzzle puzzle) {
+    public SolveResult solve(Puzzle puzzle) {
+        evaluations = 0;
         List<Bee> colony = initializeColony(puzzle);
         Solution best = trackBest(colony, null);
 
-        for (int iteration = 0; iteration < maxIterations && !best.isPerfect(); iteration++) {
+        int iterations = 0;
+        while (iterations < maxIterations && !best.isPerfect()) {
             employedBeePhase(puzzle, colony);
             onlookerBeePhase(puzzle, colony);
             scoutBeePhase(puzzle, colony);
 
             best = trackBest(colony, best);
+            iterations++;
         }
-        return best;
+        return new SolveResult(best, iterations, evaluations);
+    }
+
+    private void evaluate(Puzzle puzzle, Solution solution) {
+        fitnessEvaluator.evaluate(puzzle, solution);
+        evaluations++;
     }
 
     private List<Bee> initializeColony(Puzzle puzzle) {
@@ -81,7 +95,7 @@ public abstract class AbstractAbcSolver implements NonogramSolver {
 
         for (int i = 0; i < colonySize; i++) {
             Solution solution = Solution.random(puzzle.cellCount(), randomGenerator);
-            fitnessEvaluator.evaluate(puzzle, solution);
+            evaluate(puzzle, solution);
             colony.add(new Bee(solution));
         }
         return colony;
@@ -102,7 +116,7 @@ public abstract class AbstractAbcSolver implements NonogramSolver {
         for (Bee bee : colony) {
             Solution current = bee.getSolution();
             Solution candidate = generateNeighbor(current, puzzle);
-            fitnessEvaluator.evaluate(puzzle, candidate);
+            evaluate(puzzle, candidate);
 
             if (candidate.isBetterThan(current)) {
                 bee.updateSolution(candidate);
@@ -120,7 +134,7 @@ public abstract class AbstractAbcSolver implements NonogramSolver {
 
             Solution current = selected.getSolution();
             Solution candidate = generateNeighbor(current, puzzle);
-            fitnessEvaluator.evaluate(puzzle, candidate);
+            evaluate(puzzle, candidate);
 
             if (candidate.isBetterThan(current)) {
                 selected.updateSolution(candidate);
@@ -165,7 +179,7 @@ public abstract class AbstractAbcSolver implements NonogramSolver {
         for (Bee bee : colony) {
             if (bee.isExhausted(limit)) {
                 Solution fresh = Solution.random(puzzle.cellCount(), randomGenerator);
-                fitnessEvaluator.evaluate(puzzle, fresh);
+                evaluate(puzzle, fresh);
                 bee.resetWithNewSolution(fresh);
             }
         }

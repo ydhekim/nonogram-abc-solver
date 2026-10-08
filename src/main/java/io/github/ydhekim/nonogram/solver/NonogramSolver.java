@@ -1,7 +1,6 @@
 package io.github.ydhekim.nonogram.solver;
 
 import io.github.ydhekim.nonogram.model.Puzzle;
-import io.github.ydhekim.nonogram.model.Solution;
 
 /**
  * Common contract for every nonogram solving strategy.
@@ -16,12 +15,12 @@ public interface NonogramSolver {
     /**
      * Searches for a solution to the given puzzle.
      *
-     * <p>Heuristic implementations are not guaranteed to find a perfect solution, so the returned
-     * value is the best candidate found. Inspect {@link Solution#isPerfect()} or
-     * {@link Solution#getFitness()} to tell an exact solution from an approximation.
+     * <p>Heuristic implementations are not guaranteed to find a perfect solution, so the result
+     * carries the best candidate found. Check {@link SolveResult#solved()} to tell an exact solution
+     * from an approximation; the search effort is reported alongside it.
      *
      * @param puzzle the puzzle to solve
-     * @return the best solution found, evaluated and never {@code null}
+     * @return the best solution found with its search effort, never {@code null}
      */
-    Solution solve(Puzzle puzzle);
+    SolveResult solve(Puzzle puzzle);
 }
