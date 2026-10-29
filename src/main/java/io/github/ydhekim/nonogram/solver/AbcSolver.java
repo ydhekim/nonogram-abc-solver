@@ -11,7 +11,7 @@ import io.github.ydhekim.nonogram.model.Solution;
  * implementation, kept for comparison against the error-driven variant, which targets the worst
  * scoring row and column instead of mutating uniformly.
  *
- * @see OptimizedAbcSolver
+ * @see EnhancedAbcSolver
  * @see AbstractAbcSolver
  */
 public class AbcSolver extends AbstractAbcSolver {
