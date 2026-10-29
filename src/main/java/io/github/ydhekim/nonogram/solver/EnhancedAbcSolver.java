@@ -14,7 +14,7 @@ import io.github.ydhekim.nonogram.model.Solution;
  * @see AbcSolver
  * @see AbstractAbcSolver
  */
-public class OptimizedAbcSolver extends AbstractAbcSolver {
+public class EnhancedAbcSolver extends AbstractAbcSolver {
     private final double explorationRate;
 
     /**
@@ -24,7 +24,7 @@ public class OptimizedAbcSolver extends AbstractAbcSolver {
      * @param explorationRate probability of flipping a random cell instead of targeting the worst
      *                        scoring line
      */
-    public OptimizedAbcSolver(int colonySize, int limit, int maxIterations, double explorationRate) {
+    public EnhancedAbcSolver(int colonySize, int limit, int maxIterations, double explorationRate) {
         super(colonySize, limit, maxIterations);
         this.explorationRate = explorationRate;
     }

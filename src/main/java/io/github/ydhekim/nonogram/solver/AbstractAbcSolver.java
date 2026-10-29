@@ -23,7 +23,7 @@ import java.util.random.RandomGeneratorFactory;
  * starts from a fresh random colony, so successive runs are independent samples.
  *
  * @see AbcSolver
- * @see OptimizedAbcSolver
+ * @see EnhancedAbcSolver
  */
 public abstract class AbstractAbcSolver implements NonogramSolver {
     private final int colonySize;
